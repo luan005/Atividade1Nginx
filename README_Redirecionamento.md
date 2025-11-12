@@ -9,19 +9,19 @@ docker run -itd --name node1 --network lb_net nginx:1.29.3-alpine
 docker run -itd --name node2 --network lb_net nginx:1.29.3-alpine
 docker run -itd --name node3 --network lb_net nginx:1.29.3-alpine
 
-# Acesse o bash do loadbalancer
+## Acesse o bash do loadbalancer
 
 docker exec -it loadbalancer sh
 apk add --no-cache nano
 
 
-# Acesse o arquivo default.conf
+## Acesse o arquivo default.conf
 
 cd /etc/nginx/conf.d
 nano default.conf
 
 
-# Edite o arquivo da seguinte forma
+## Edite o arquivo da seguinte forma
 
 upstream webfront {
     server node1:80;
@@ -41,13 +41,13 @@ server {
 }
 
 
-# Reinicie todos os containers
+## Reinicie todos os containers
 
 nginx -t
 nginx -s reload
 exit
 docker restart loadbalancer node1 node2 node3
 
-# Por fim, teste o balanceamento
+## Por fim, teste o balanceamento
 
 curl -i http://localhost:81/
