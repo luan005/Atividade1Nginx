@@ -52,9 +52,5 @@ Acesse no navegador:
 
 http://localhost:81
 
-Teste rotas internas como:
-
-http://localhost:81/login  
-http://localhost:81/dashboard
 
 Se configurado corretamente, não ocorrerá erro 404.
