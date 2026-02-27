@@ -1,53 +1,60 @@
-# Balanceador de Carga com Nginx (3 Nós)
+# Configuração das Rotas do ReactJS no Nginx
 
-## Instalação dos serviços
+## 1️⃣ Criar a network
 
-docker network create lb_net
+docker network create react-net
 
-docker run -itd --name loadbalancer --network lb_net -p 81:80 nginx:1.29.3-alpine
-docker run -itd --name node1 --network lb_net nginx:1.29.3-alpine
-docker run -itd --name node2 --network lb_net nginx:1.29.3-alpine
-docker run -itd --name node3 --network lb_net nginx:1.29.3-alpine
+---
 
-# Acesse o bash do loadbalancer
+## 2️⃣ Gerar o build da aplicação React
 
-docker exec -it loadbalancer sh
-apk add --no-cache nano
+npm run build
 
+---
 
-# Acesse o arquivo default.conf
-
-cd /etc/nginx/conf.d
-nano default.conf
-
-
-# Edite o arquivo da seguinte forma
-
-upstream webfront {
-    server node1:80;
-    server node2:80;
-    server node3:80;
-}
+## 3️⃣ Criar o arquivo default.conf
 
 server {
     listen 80;
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
 
     location / {
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_pass http://webfront;
+        try_files $uri /index.html;
     }
 }
 
+---
 
-# Reinicie todos os containers
+## 4️⃣ Subir o container Nginx
 
-nginx -t
-nginx -s reload
-exit
-docker restart loadbalancer node1 node2 node3
+docker run -itd \
+  --name nginx-react \
+  --network react-net \
+  -p 81:80 \
+  -v CAMINHO/DO/BUILD:/usr/share/nginx/html \
+  -v CAMINHO/DO/default.conf:/etc/nginx/conf.d/default.conf \
+  nginx:1.29.3-alpine
 
-## Por fim, teste o balanceamento
+---
 
-curl -i http://localhost:81/
+## 5️⃣ Reiniciar o container (se necessário)
+
+docker restart nginx-react
+
+---
+
+## 6️⃣ Teste
+
+Acesse no navegador:
+
+http://localhost:81
+
+Teste rotas internas como:
+
+http://localhost:81/login  
+http://localhost:81/dashboard
+
+Se configurado corretamente, não ocorrerá erro 404.
